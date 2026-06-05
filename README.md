@@ -16,6 +16,32 @@
 
 ---
 
+## What's New in 4.1.0
+
+### ⚡ Lower token / AIC cost per interaction
+
+4.1.0 reduces token/AIC consumption per interaction without losing capabilities:
+
+- **Trimmed always-on entrypoint (~31% lighter)** — less context injected on every request.
+- **Narrow instruction globs** (`applyTo` by object type) — only the rules for the file you're editing load.
+- **Curated context passing** — the Conductor passes extracted context excerpts to subagents instead of whole files.
+- **Condensed primitives** (agents, instructions, skills) — behavior and orchestration preserved.
+- **BCQuality task-context built once and passed inline** — no re-derivation on every call.
+
+### 📚 Cited reviews & audits with BCQuality (optional)
+
+Agents back findings with a pinned, externally-consumed BC knowledge base. Absent by default — graceful native fallback (never blocks). See [Using BCQuality (optional)](#using-bcquality-optional) below.
+
+### Also in 4.1.0
+
+- **`@AL Triage`** (reactive diagnosis) and **`@Dredd`** (independent auditor) — read-only on-demand specialists.
+- **`skill-contribution-assistant`** — guided contribution workflow.
+- **Restored full architecture & spec templates** with authoring guidance.
+
+See [CHANGELOG.md](CHANGELOG.md) for details.
+
+---
+
 ## What is ALDC?
 
 ALDC (AL Development Collection) transforms how you develop Business Central extensions. Instead of ad-hoc code generation, ALDC provides **structured, contract-driven development** with human-in-the-loop gates.
@@ -336,20 +362,29 @@ AL-Development-Collection-for-GitHub-Copilot/
 
 ---
 
-## What's New in v4.1.0
+## Using BCQuality (optional)
 
-- **BCQuality citable-knowledge layer (optional)** — review/audit agents back their findings with a pinned, externally-consumed BC knowledge base; evidence (pin coherence + citation resolvability) is validated in CI. Graceful native fallback when absent — never blocks.
-- **Two on-demand agents** — `@AL Triage` (reactive diagnosis) and `@Dredd` (independent static auditor), read-only on code.
-- **Leaner always-on context** — consuming projects now receive the trimmed Copilot entrypoint (~31% lighter).
-- **New skill** — `skill-contribution-assistant` for guided contributions.
-- **Validation** — AL file-naming rule + trim-aware entrypoint coherence in `aldc-validate`.
-- **Claude Code plugin** refreshed with the new agents, BCQuality consultation, and a SessionStart precondition hook.
+BCQuality is an optional, externally-consumed BC knowledge layer for cited reviews and audits. It is a pinned fork ([github.com/javiarmesto/bcquality](https://github.com/javiarmesto/bcquality)) consumed via multi-root workspace — **not a submodule, never compiled**. When absent, agents fall back gracefully to the native A–G checklist and are never blocked.
 
-See [CHANGELOG.md](CHANGELOG.md) for details.
+**Quick start (3 steps):**
+
+1. From your AL project root, run the install script — clones the pinned fork to `../bcquality`:
+   ```bash
+   bash tools/bcquality/install.sh
+   # or on Windows:
+   pwsh -File tools/bcquality/install.ps1
+   ```
+   Override the target location with `$BCQUALITY_HOME` if needed.
+
+2. Open `aldc.code-workspace` (multi-root: your extension + `../bcquality`, which does **not** compile).
+
+3. Run a review or audit (`@AL Development Conductor`, `@Dredd`, or `@AL Triage`): they cite BCQuality if mounted, or degrade gracefully to native checks if not.
+
+See [`docs/bcquality.md`](docs/bcquality.md) for the full guide.
 
 ---
 
-## What's New in v4.0.0
+## What's New in 4.0.0
 
 - **Token efficiency**: agents, instructions, skills, prompts, and templates condensed for lower token footprint — behavior and orchestration preserved
 - **`packages/foundation/`**: new package layout for framework primitives alongside the existing root layout

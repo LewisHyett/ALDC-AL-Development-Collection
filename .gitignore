@@ -15,11 +15,11 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-
+aldc_audit* 
 # Test outputs
 test-results/
 coverage/
-
+push.*
 # Temporary files
 *.tmp
 *.bak

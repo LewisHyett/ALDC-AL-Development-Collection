@@ -1,6 +1,6 @@
 # Study — claude-plugin tool-prose modernization (Copilot/VS Code → Claude Code)
 
-**Status:** OPEN study — no agent files changed yet. Blocked on one decision (AL CLI availability, §4).
+**Status:** RESOLVED & EXECUTED (branch `claude/plugin-prose-modernization-8ggmq5`). §4 decided; §5 done. See "Resolution" at the bottom.
 **Scope:** `claude-plugin/` only. The `.github/`/top-level (Copilot) distribution is unaffected.
 **Why:** The Claude Code plugin agents were authored referencing **Copilot context-variables** (`#changes`, `#problems`, …) and the **VS Code AL extension MCP** (`ms-dynamics-smb.al/al_build`, `al_publish`, …). Those tools **do not exist in the Claude Code harness**, so the prose is misleading there. This is pre-existing and orthogonal to the FORGE→ALDC upstream port — tracked separately here.
 
@@ -75,3 +75,23 @@ The bulk of `al-developer` (and parts of conductor/implement-subagent) assumes *
 ## 6. Out of scope
 - The top-level / `.github/` Copilot distribution (its `ms-dynamics-smb.al/*` references are correct *there*).
 - The FORGE→ALDC port itself (done in PR #51); this study is a follow-up modernization.
+
+---
+
+## Resolution (executed)
+
+**§4 decision — Option 1, *where the CLI reaches*.** The target environment ships the **AL command-line tool (ALTool / `al`)** + the AL LSP ([devenv-al-tool](https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/developer/devenv-al-tool)). Crucially, ALTool **only compiles/packages** — it has no publish, test, download-symbols, or debug verb. So the rewrite split:
+- **Compile/build/package** → `Bash: al compile` / `al workspace compile` (true Option 1).
+- **Symbol intelligence** → `al-symbols-mcp` (which is the LSP/MCP under the hood).
+- **Publish / run tests / download symbols / debug / snapshot / CPU profile** → no CLI verb → VS Code / AL-Go-CI human steps (Option 2 for these). Agents generate code and hand off the runtime step.
+
+**§5 executed** on branch `claude/plugin-prose-modernization-8ggmq5`, prose-only, `claude-plugin/` only (Copilot distribution untouched). Validator stayed `ALDC Core v1.1 COMPLIANT (0 warnings)`; plugin JSON re-validated:
+1. **Tool-prose modernization** — all 6 tool-heavy agents (developer, architect, conductor, planning, review, implement), 4 commands (build, context-create, initialize, memory-create), 10 skills; canonical "Tooling" mapping added to `claude-plugin/CLAUDE.md`. Bucket-A remapped; bucket-B per the §4 split; bucket-C diagnostics → read `al compile` / test output.
+2. **Sync — #66 token guards** ported to conductor/implement/review/dredd.
+3. **Sync — #67 triage guard + #68 spec-as-truth** ported to triage, al-spec-create (§1.3 verify-events, §1.4 ground-in-framework, §5 decision-vs-signature, success criteria), planner, implementer, conductor.
+4. **Sync — #70 instructions+skills actually load** (the core runtime fix — even more relevant under Claude Code, no editor-attached auto-apply): conductor injects the 7 always-on instruction micro-rules inline + passes skills as hints; implement/review/dredd load skills on demand (`Read` the `SKILL.md`); symbolic evidencing (`📐 instr ✓ · 🧠 skill·tag` / `{domain, ✓ | ↗bcq | ∅}`) replaces the verbose Skills-Loaded tables; dead "Copilot loads automatically" prose removed from architect/presales/developer.
+5. **Sync — #71 checkpoint evidence row** ported to the conductor's checkpoints (adapted to the plugin's existing card format).
+
+> Mid-session, `main` advanced (#67/#68 merged with final wording; #70/#71 landed new). The branch was **rebased onto current main** and the sync re-aligned to the merged wording — the plugin and top-level have diverged structurally, so the intent was adapted, not blind-copied.
+
+**Considered & discarded — `allowed-tools` MCP grants (config, not prose):** plugin command `allowed-tools` frontmatter doesn't list the MCP tools (`al-symbols-mcp`, `microsoft-docs`, `context7`) referenced in prose. **Not a correctness issue** — the Claude Code docs confirm `allowed-tools` is a permission *pre-grant*, not a hard allowlist ("every tool remains callable; permission settings still govern tools not listed"). The prose works as-is; listing them would only skip an approval prompt. Marginal benefit vs. a config change on a strict-branch repo → **dropped**.
